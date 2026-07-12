@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Expenses & Fuel — FleetFlow{% endblock %}
+{% block page_title %}Expenses & Fuel Tracking{% endblock %}
+{% block page_description %}Track operational costs, fuel consumption, and per-vehicle expenses{% endblock %}
+{% block page_actions %}{% if request.user.role == 'manager' or request.user.role == 'dispatcher' or request.user.is_superuser %}<button class="btn btn-primary" hx-get="{% url 'finance:expense_create' %}" hx-target="#modal-content"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Log Expense</button>{% endif %}{% endblock %}
+{% block content %}
+<div>
+    <!-- Tab Navigation -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-expenses">Expense Log</button>
+        <button class="tab-btn" data-tab="tab-trips">Completed Trips</button>
+        <button class="tab-btn" data-tab="tab-costs">Vehicle Costs</button>
+    </div>
+
+    <!-- Tab: Expenses -->
+    <div id="tab-expenses" class="tab-panel active">
+        <div class="mb-4">
+            <form method="get" class="filter-bar">
+                <select name="category" class="form-input !w-auto !py-2 !text-xs"><option value="">All Categories</option>{% for val, label in categories %}<option value="{{ val }}" {% if selected_category == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                {% if selected_category %}<a href="{% url 'finance:expense_list' %}" class="btn btn-secondary btn-sm">Clear</a>{% endif %}
+            </form>
+        </div>
+        <div class="card">
+            <table class="erp-table"><thead><tr><th>Vehicle</th><th>Category</th><th>Liters</th><th>Cost</th><th>Date</th><th>Notes</th></tr></thead>
+                <tbody id="expense-table-body">{% for expense in expenses %}{% include "finance/partials/expense_row.html" %}{% empty %}<tr><td colspan="6" class="text-center text-slate-400 py-8">No expenses logged</td></tr>{% endfor %}</tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Completed Trips -->
+    <div id="tab-trips" class="tab-panel">
+        <div class="card">
+            <table class="erp-table"><thead><tr><th>Trip</th><th>Vehicle</th><th>Driver</th><th>Route</th><th>Revenue</th><th>Distance</th></tr></thead>
+                <tbody>{% for trip in completed_trips %}<tr>
+                    <td><a href="{% url 'operations:trip_detail' trip.pk %}" class="font-semibold text-blue-600 hover:text-blue-800">#{{ trip.pk }}</a></td>
+                    <td>{{ trip.vehicle.name }}</td><td>{{ trip.driver.name }}</td>
+                    <td class="text-slate-500">{{ trip.origin }} → {{ trip.destination }}</td>
+                    <td class="text-mono font-medium">₹{{ trip.revenue|floatformat:0 }}</td>
+                    <td class="text-mono text-slate-500">{{ trip.distance|default:"—" }} km</td>
+                </tr>{% empty %}<tr><td colspan="6" class="text-center text-slate-400 py-8">No completed trips</td></tr>{% endfor %}</tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Vehicle Costs -->
+    <div id="tab-costs" class="tab-panel">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">{% for v in vehicle_costs %}
+            <div class="card">
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-slate-800 text-sm">{{ v.name }}</h3>
+                        <span class="pill pill-{{ v.status_color }}">{{ v.get_status_display }}</span>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between items-center"><span class="text-slate-500">Fuel</span><span class="font-bold text-mono text-slate-800">₹{{ v.total_fuel|default:"0" }}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500">Maintenance</span><span class="font-bold text-mono text-slate-800">₹{{ v.total_maintenance|default:"0" }}</span></div>
+                    </div>
+                </div>
+            </div>{% empty %}<p class="text-slate-400 text-xs col-span-3">No cost data available.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
