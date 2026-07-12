@@ -15,8 +15,12 @@ class Trip(models.Model):
 
     vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT, related_name='trips')
     driver = models.ForeignKey(Driver, on_delete=models.PROTECT, related_name='trips')
-    origin = models.CharField(max_length=200)
+    source = models.CharField(max_length=200)
     destination = models.CharField(max_length=200)
+    planned_distance = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text='Expected length of the trip before dispatch in km',
+    )
     cargo_weight = models.DecimalField(
         max_digits=10, decimal_places=2,
         validators=[MinValueValidator(0.01)],
@@ -50,7 +54,7 @@ class Trip(models.Model):
         ]
 
     def __str__(self):
-        return f"Trip #{self.pk} — {self.origin} → {self.destination} ({self.get_status_display()})"
+        return f"Trip #{self.pk} — {self.source} → {self.destination} ({self.get_status_display()})"
 
     @property
     def distance(self):

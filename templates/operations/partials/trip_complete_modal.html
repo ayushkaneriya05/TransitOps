@@ -7,7 +7,7 @@
 </div>
 <div class="modal-body">
     <div class="px-3 py-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm mb-4">
-        <strong>{{ trip.origin }} → {{ trip.destination }}</strong><br>
+        <strong>{{ trip.source }} → {{ trip.destination }}</strong><br>
         <span class="text-xs text-blue-600">Vehicle: {{ trip.vehicle.name }} · Driver: {{ trip.driver.name }}</span>
     </div>
     <form method="post" action="{{ action_url }}"

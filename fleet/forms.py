@@ -8,10 +8,10 @@ FORM_SELECT_CLASS = FORM_INPUT_CLASS
 class VehicleForm(forms.ModelForm):
     class Meta:
         model = Vehicle
-        fields = ['name', 'license_plate', 'vehicle_type', 'capacity', 'odometer', 'acquisition_cost', 'region']
+        fields = ['name', 'registration_number', 'vehicle_type', 'capacity', 'odometer', 'acquisition_cost', 'region']
         widgets = {
             'name': forms.TextInput(attrs={'class': FORM_INPUT_CLASS, 'placeholder': 'e.g. Van-05'}),
-            'license_plate': forms.TextInput(attrs={'class': FORM_INPUT_CLASS, 'placeholder': 'e.g. MH-12-AB-1234'}),
+            'registration_number': forms.TextInput(attrs={'class': FORM_INPUT_CLASS, 'placeholder': 'e.g. MH-12-AB-1234'}),
             'vehicle_type': forms.Select(attrs={'class': FORM_SELECT_CLASS}),
             'capacity': forms.NumberInput(attrs={'class': FORM_INPUT_CLASS, 'placeholder': 'Max capacity in kg', 'min': '0.01', 'step': '0.01'}),
             'odometer': forms.NumberInput(attrs={'class': FORM_INPUT_CLASS, 'placeholder': 'Current km', 'min': '0', 'step': '0.01'}),

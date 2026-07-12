@@ -21,14 +21,23 @@ def dashboard(request):
         vehicles = vehicles.filter(region__icontains=region)
 
     total_vehicles = vehicles.count()
-    available_count = vehicles.filter(status=Vehicle.Status.AVAILABLE).count()
-    on_trip_count = vehicles.filter(status=Vehicle.Status.ON_TRIP).count()
-    in_maintenance_count = vehicles.filter(status=Vehicle.Status.IN_SHOP).count()
-    utilization_rate = round((on_trip_count / total_vehicles * 100), 1) if total_vehicles > 0 else 0
-
-    # Filter pending cargo by the same vehicle set
+    
+    # NEW KPIS
+    active_vehicles = vehicles.filter(status__in=[Vehicle.Status.AVAILABLE, Vehicle.Status.ON_TRIP]).count()
+    available_vehicles = vehicles.filter(status=Vehicle.Status.AVAILABLE).count()
+    maintenance_vehicles = vehicles.filter(status=Vehicle.Status.IN_SHOP).count()
+    
+    # Trips
     vehicle_ids = vehicles.values_list('id', flat=True)
-    pending_cargo = Trip.objects.filter(status=Trip.Status.DRAFT, vehicle_id__in=vehicle_ids).count()
+    active_trips = Trip.objects.filter(status=Trip.Status.DISPATCHED, vehicle_id__in=vehicle_ids).count()
+    pending_trips = Trip.objects.filter(status=Trip.Status.DRAFT, vehicle_id__in=vehicle_ids).count()
+    
+    # Drivers on Duty
+    drivers_on_duty = Driver.objects.filter(status__in=[Driver.Status.AVAILABLE, Driver.Status.ON_TRIP]).count()
+    
+    # Utilization
+    on_trip_vehicles = vehicles.filter(status=Vehicle.Status.ON_TRIP).count()
+    fleet_utilization = round((on_trip_vehicles / total_vehicles * 100), 1) if total_vehicles > 0 else 0
 
     recent_trips = (
         Trip.objects.select_related('vehicle', 'driver')
@@ -40,11 +49,13 @@ def dashboard(request):
 
     context = {
         'total_vehicles': total_vehicles,
-        'available_count': available_count,
-        'on_trip_count': on_trip_count,
-        'in_maintenance_count': in_maintenance_count,
-        'utilization_rate': utilization_rate,
-        'pending_cargo': pending_cargo,
+        'active_vehicles': active_vehicles,
+        'available_vehicles': available_vehicles,
+        'maintenance_vehicles': maintenance_vehicles,
+        'active_trips': active_trips,
+        'pending_trips': pending_trips,
+        'drivers_on_duty': drivers_on_duty,
+        'fleet_utilization': fleet_utilization,
         'recent_trips': recent_trips,
         'vehicle_types': Vehicle.VehicleType.choices,
         'regions': regions,

@@ -1,6 +1,6 @@
 <tr>
     <td class="font-semibold text-slate-800">{{ vehicle.name }}</td>
-    <td><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200">{{ vehicle.license_plate }}</span></td>
+    <td><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200">{{ vehicle.registration_number }}</span></td>
     <td><span class="pill pill-gray" style="font-size:10px">{{ vehicle.get_vehicle_type_display }}</span></td>
     <td class="text-mono">{{ vehicle.capacity|floatformat:0 }} kg</td>
     <td class="text-mono text-slate-500">{{ vehicle.odometer|floatformat:0 }} km</td>

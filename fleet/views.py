@@ -48,7 +48,7 @@ def vehicle_list(request):
     if type_filter:
         vehicles = vehicles.filter(vehicle_type=type_filter)
     if search:
-        vehicles = vehicles.filter(name__icontains=search) | vehicles.filter(license_plate__icontains=search)
+        vehicles = vehicles.filter(name__icontains=search) | vehicles.filter(registration_number__icontains=search)
 
     context = {
         'vehicles': vehicles,
@@ -168,10 +168,9 @@ def maintenance_create(request):
                 record = form.save()
                 vehicle = record.vehicle
                 old_status = vehicle.status
-                if vehicle.status == Vehicle.Status.AVAILABLE:
-                    vehicle.status = Vehicle.Status.IN_SHOP
-                    vehicle.save()
-                    log_state_change(vehicle, request.user, 'status', old_status, vehicle.status, f'Moved to shop for {record.get_service_type_display()}')
+                vehicle.status = Vehicle.Status.IN_SHOP
+                vehicle.save()
+                log_state_change(vehicle, request.user, 'status', old_status, vehicle.status, f'Moved to shop for {record.get_service_type_display()}')
                 log_creation(record, request.user, f'Maintenance record: {record.get_service_type_display()}')
             if request.htmx:
                 return _htmx_success_row(

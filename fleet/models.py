@@ -17,7 +17,7 @@ class Vehicle(models.Model):
         BIKE = 'bike', 'Bike'
 
     name = models.CharField(max_length=100, help_text='Vehicle name/model (e.g. Van-05)')
-    license_plate = models.CharField(max_length=20, unique=True, db_index=True)
+    registration_number = models.CharField(max_length=20, unique=True, db_index=True)
     vehicle_type = models.CharField(max_length=10, choices=VehicleType.choices, default=VehicleType.VAN)
     capacity = models.DecimalField(
         max_digits=10, decimal_places=2,
@@ -55,7 +55,7 @@ class Vehicle(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.license_plate})"
+        return f"{self.name} ({self.registration_number})"
 
     @property
     def is_available(self):

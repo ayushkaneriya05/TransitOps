@@ -17,7 +17,7 @@ class TripServiceTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testmanager', password='testpass', role='manager')
         self.vehicle = Vehicle.objects.create(
-            name='Test-Van-01', license_plate='TEST-001',
+            name='Test-Van-01', registration_number='TEST-001',
             vehicle_type='van', capacity=500, odometer=10000,
             acquisition_cost=500000, region='North India',
         )
@@ -30,7 +30,7 @@ class TripServiceTestCase(TestCase):
     def _create_draft_trip(self, cargo=200, revenue=10000):
         return Trip.objects.create(
             vehicle=self.vehicle, driver=self.driver,
-            origin='Mumbai', destination='Pune',
+            source='Mumbai', destination='Pune',
             cargo_weight=cargo, revenue=revenue,
         )
 

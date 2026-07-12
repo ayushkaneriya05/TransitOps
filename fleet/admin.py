@@ -4,9 +4,9 @@ from .models import Vehicle, Maintenance
 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'license_plate', 'vehicle_type', 'capacity', 'odometer', 'status', 'region')
+    list_display = ('name', 'registration_number', 'vehicle_type', 'capacity', 'odometer', 'status', 'region')
     list_filter = ('status', 'vehicle_type', 'region')
-    search_fields = ('name', 'license_plate')
+    search_fields = ('name', 'registration_number')
 
 
 @admin.register(Maintenance)

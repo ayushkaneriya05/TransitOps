@@ -1,4 +1,4 @@
-<!-- Vehicle Create/Edit Modal Partial -->
+<!-- Fuel Create Modal Partial -->
 <div class="modal-header">
     <h2>{{ title }}</h2>
     <button class="modal-close" onclick="closeModal()" type="button">
@@ -22,41 +22,27 @@
         <div class="space-y-3">
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Name</label>
-                    {{ form.name }}
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Vehicle</label>
+                    {{ form.vehicle }}
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">License Plate</label>
-                    {{ form.registration_number }}
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Date</label>
+                    {{ form.date }}
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Type</label>
-                    {{ form.vehicle_type }}
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Liters</label>
+                    {{ form.liters }}
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Capacity (kg)</label>
-                    {{ form.capacity }}
+                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Amount (₹)</label>
+                    {{ form.cost }}
                 </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Odometer (km)</label>
-                    {{ form.odometer }}
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Acquisition Cost (₹)</label>
-                    {{ form.acquisition_cost }}
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Region</label>
-                {{ form.region }}
             </div>
         </div>
         <div class="flex gap-2 mt-5 pt-4 border-t border-slate-100">
-            <button type="submit" class="btn btn-primary flex-1">Save Vehicle</button>
+            <button type="submit" class="btn btn-primary flex-1">Save Fuel Log</button>
             <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
         </div>
     </form>

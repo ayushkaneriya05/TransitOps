@@ -2,9 +2,10 @@ import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum, Q
-from .models import Expense
-from .forms import ExpenseForm
+from django.db.models import Sum, Q, OuterRef, Subquery, Value, DecimalField
+from django.db.models.functions import Coalesce
+from .models import Expense, FuelLog
+from .forms import ExpenseForm, FuelLogForm
 from fleet.models import Vehicle, Maintenance
 from operations.models import Trip
 from core.decorators import role_required
@@ -36,13 +37,19 @@ def expense_list(request):
 
     completed_trips = Trip.objects.filter(status=Trip.Status.COMPLETED).select_related('vehicle', 'driver').order_by('-updated_at')[:10]
 
+    fuel_sq = FuelLog.objects.filter(vehicle=OuterRef('pk')).values('vehicle').annotate(total=Sum('cost')).values('total')
+    maint_sq = Maintenance.objects.filter(vehicle=OuterRef('pk')).values('vehicle').annotate(total=Sum('cost')).values('total')
+
     vehicles = Vehicle.objects.exclude(status=Vehicle.Status.RETIRED).annotate(
-        total_fuel=Sum('expenses__cost', filter=Q(expenses__category='fuel')),
-        total_maintenance=Sum('maintenance_records__cost'),
+        total_fuel=Coalesce(Subquery(fuel_sq), Value(0, output_field=DecimalField()), output_field=DecimalField()),
+        total_maintenance=Coalesce(Subquery(maint_sq), Value(0, output_field=DecimalField()), output_field=DecimalField()),
     )
+    
+    fuel_logs = FuelLog.objects.select_related('vehicle').all()
 
     context = {
         'expenses': expenses,
+        'fuel_logs': fuel_logs,
         'completed_trips': completed_trips,
         'vehicle_costs': vehicles,
         'categories': Expense.Category.choices,
@@ -74,3 +81,28 @@ def expense_create(request):
         form = ExpenseForm()
     template = 'finance/partials/expense_modal_form.html' if request.htmx else 'finance/expense_form.html'
     return render(request, template, {'form': form, 'title': 'Log Expense', 'action_url': request.path})
+
+
+@login_required
+@role_required('manager', 'dispatcher')
+def fuel_create(request):
+    if request.method == 'POST':
+        form = FuelLogForm(request.POST)
+        if form.is_valid():
+            log = form.save()
+            log_creation(log, request.user, f'Fuel Log: {log.liters}L for ₹{log.cost}')
+            if request.htmx:
+                return _htmx_success_row(
+                    request, 'finance/partials/fuel_row.html', {'log': log},
+                    'fuel-table-body', f'Fuel log for {log.liters}L added.',
+                )
+            messages.success(request, f'Fuel log for {log.liters}L added.')
+            return redirect('finance:expense_list')
+        else:
+            if request.htmx:
+                return _htmx_error_form(request, 'finance/partials/fuel_modal_form.html',
+                                        {'form': form, 'title': 'Log Fuel', 'action_url': request.path})
+    else:
+        form = FuelLogForm()
+    template = 'finance/partials/fuel_modal_form.html' if request.htmx else 'finance/fuel_form.html'
+    return render(request, template, {'form': form, 'title': 'Log Fuel', 'action_url': request.path})

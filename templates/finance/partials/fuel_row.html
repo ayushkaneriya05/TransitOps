@@ -1,0 +1,6 @@
+<tr>
+    <td>{{ log.vehicle.name }}</td>
+    <td class="text-mono font-medium">{{ log.liters }}L</td>
+    <td class="text-mono font-medium">₹{{ log.cost|floatformat:2 }}</td>
+    <td class="text-slate-500 text-xs">{{ log.date }}</td>
+</tr>

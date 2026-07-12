@@ -2,18 +2,39 @@
 {% block title %}Expenses & Fuel — TransitOps{% endblock %}
 {% block page_title %}Expenses & Fuel Tracking{% endblock %}
 {% block page_description %}Track operational costs, fuel consumption, and per-vehicle expenses{% endblock %}
-{% block page_actions %}{% if request.user.role == 'manager' or request.user.role == 'dispatcher' or request.user.is_superuser %}<button class="btn btn-primary" hx-get="{% url 'finance:expense_create' %}" hx-target="#modal-content"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Log Expense</button>{% endif %}{% endblock %}
+{% block page_actions %}{% if request.user.role == 'manager' or request.user.role == 'dispatcher' or request.user.is_superuser %}
+<button class="btn btn-secondary mr-2" hx-get="{% url 'finance:fuel_create' %}" hx-target="#modal-content"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Log Fuel</button>
+<button class="btn btn-primary" hx-get="{% url 'finance:expense_create' %}" hx-target="#modal-content"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Log Expense</button>{% endif %}{% endblock %}
 {% block content %}
 <div>
     <!-- Tab Navigation -->
     <div class="tab-bar">
-        <button class="tab-btn active" data-tab="tab-expenses">Expense Log</button>
+        <button class="tab-btn active" data-tab="tab-fuel">Fuel Logs</button>
+        <button class="tab-btn" data-tab="tab-expenses">Expense Log</button>
         <button class="tab-btn" data-tab="tab-trips">Completed Trips</button>
         <button class="tab-btn" data-tab="tab-costs">Vehicle Costs</button>
     </div>
 
+    <!-- Tab: Fuel Logs -->
+    <div id="tab-fuel" class="tab-panel active">
+        <div class="card">
+            <table class="erp-table"><thead><tr><th>Vehicle</th><th>Liters</th><th>Cost</th><th>Date</th></tr></thead>
+                <tbody id="fuel-table-body">
+                    {% for log in fuel_logs %}
+                    <tr>
+                        <td>{{ log.vehicle.name }}</td>
+                        <td class="text-mono font-medium">{{ log.liters }}L</td>
+                        <td class="text-mono font-medium">₹{{ log.cost|floatformat:2 }}</td>
+                        <td class="text-slate-500 text-xs">{{ log.date }}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="4" class="text-center text-slate-400 py-8">No fuel logged</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Tab: Expenses -->
-    <div id="tab-expenses" class="tab-panel active">
+    <div id="tab-expenses" class="tab-panel">
         <div class="mb-4">
             <form method="get" class="filter-bar">
                 <select name="category" class="form-input !w-auto !py-2 !text-xs"><option value="">All Categories</option>{% for val, label in categories %}<option value="{{ val }}" {% if selected_category == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
@@ -22,8 +43,19 @@
             </form>
         </div>
         <div class="card">
-            <table class="erp-table"><thead><tr><th>Vehicle</th><th>Category</th><th>Liters</th><th>Cost</th><th>Date</th><th>Notes</th></tr></thead>
-                <tbody id="expense-table-body">{% for expense in expenses %}{% include "finance/partials/expense_row.html" %}{% empty %}<tr><td colspan="6" class="text-center text-slate-400 py-8">No expenses logged</td></tr>{% endfor %}</tbody>
+            <table class="erp-table"><thead><tr><th>Vehicle</th><th>Trip</th><th>Category</th><th>Cost</th><th>Date</th><th>Notes</th></tr></thead>
+                <tbody id="expense-table-body">
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.vehicle.name }}</td>
+                        <td>{% if expense.trip %}<a href="{% url 'operations:trip_detail' expense.trip.pk %}" class="text-blue-600 hover:underline">#{{ expense.trip.pk }}</a>{% else %}—{% endif %}</td>
+                        <td><span class="pill pill-gray" style="font-size:10px">{{ expense.get_category_display }}</span></td>
+                        <td class="text-mono font-medium">₹{{ expense.cost|floatformat:2 }}</td>
+                        <td class="text-slate-500 text-xs">{{ expense.date }}</td>
+                        <td class="text-slate-500 text-xs truncate max-w-xs">{{ expense.notes|default:"—" }}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="6" class="text-center text-slate-400 py-8">No expenses logged</td></tr>{% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
@@ -35,7 +67,7 @@
                 <tbody>{% for trip in completed_trips %}<tr>
                     <td><a href="{% url 'operations:trip_detail' trip.pk %}" class="font-semibold text-blue-600 hover:text-blue-800">#{{ trip.pk }}</a></td>
                     <td>{{ trip.vehicle.name }}</td><td>{{ trip.driver.name }}</td>
-                    <td class="text-slate-500">{{ trip.origin }} → {{ trip.destination }}</td>
+                    <td class="text-slate-500">{{ trip.source }} → {{ trip.destination }}</td>
                     <td class="text-mono font-medium">₹{{ trip.revenue|floatformat:0 }}</td>
                     <td class="text-mono text-slate-500">{{ trip.distance|default:"—" }} km</td>
                 </tr>{% empty %}<tr><td colspan="6" class="text-center text-slate-400 py-8">No completed trips</td></tr>{% endfor %}</tbody>

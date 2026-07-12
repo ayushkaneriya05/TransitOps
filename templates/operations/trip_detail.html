@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Trip #{{ trip.pk }} — TransitOps{% endblock %}
 {% block page_title %}Trip #{{ trip.pk }}{% endblock %}
-{% block page_description %}{{ trip.origin }} → {{ trip.destination }}{% endblock %}
+{% block page_description %}{{ trip.source }} → {{ trip.destination }}{% endblock %}
 {% block content %}
 <div class="max-w-4xl space-y-5">
     <div class="card">
@@ -10,8 +10,32 @@
                 <span class="pill pill-{{ trip.status_color }} !text-xs !px-3 !py-1">{{ trip.get_status_display }}</span>
                 <span class="text-[11px] text-slate-400">Created {{ trip.created_at|timesince }} ago</span>
             </div>
+            
+            <!-- Trip Lifecycle Timeline -->
+            <div class="mb-8 mt-4 px-4">
+                <div class="flex items-center justify-between relative">
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 rounded-full z-0"></div>
+                    <!-- Draft -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center {% if trip.status == 'draft' or trip.status == 'dispatched' or trip.status == 'completed' %}bg-blue-600 text-white{% else %}bg-slate-300 text-slate-500{% endif %} font-bold text-xs ring-4 ring-white">1</div>
+                        <span class="text-[10px] font-semibold mt-2 uppercase tracking-wide text-slate-500">Draft</span>
+                    </div>
+                    <!-- Dispatched -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center {% if trip.status == 'dispatched' or trip.status == 'completed' %}bg-blue-600 text-white{% else %}bg-slate-300 text-slate-500{% endif %} font-bold text-xs ring-4 ring-white">2</div>
+                        <span class="text-[10px] font-semibold mt-2 uppercase tracking-wide text-slate-500">Dispatched</span>
+                    </div>
+                    <!-- Completed / Cancelled -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center {% if trip.status == 'completed' %}bg-green-500 text-white{% elif trip.status == 'cancelled' %}bg-red-500 text-white{% else %}bg-slate-300 text-slate-500{% endif %} font-bold text-xs ring-4 ring-white">3</div>
+                        <span class="text-[10px] font-semibold mt-2 uppercase tracking-wide text-slate-500">
+                            {% if trip.status == 'cancelled' %}Cancelled{% else %}Completed{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wide block mb-0.5">Vehicle</span><span class="font-semibold text-slate-800 text-xs">{{ trip.vehicle.name }} ({{ trip.vehicle.license_plate }})</span></div>
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wide block mb-0.5">Vehicle</span><span class="font-semibold text-slate-800 text-xs">{{ trip.vehicle.name }} ({{ trip.vehicle.registration_number }})</span></div>
                 <div class="p-3 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wide block mb-0.5">Driver</span><span class="font-semibold text-slate-800 text-xs">{{ trip.driver.name }}</span></div>
                 <div class="p-3 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wide block mb-0.5">Cargo</span><span class="font-semibold text-slate-800 text-xs font-mono">{{ trip.cargo_weight }} kg</span></div>
                 <div class="p-3 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wide block mb-0.5">Revenue</span><span class="font-semibold text-emerald-600 text-xs font-mono">₹{{ trip.revenue|floatformat:0 }}</span></div>

@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 from fleet.models import Vehicle
 from drivers.models import Driver
+from finance.models import FuelLog
 from .models import Trip
 from core.audit import log_state_change, log_creation
 
@@ -70,7 +71,7 @@ def dispatch_trip(trip, user=None):
 
 
 @transaction.atomic
-def complete_trip(trip, odometer_end, user=None):
+def complete_trip(trip, odometer_end, fuel_consumed=None, fuel_cost=None, user=None):
     if trip.status != Trip.Status.DISPATCHED:
         raise TripValidationError([f'Trip #{trip.pk} is not in Dispatched status.'])
 
@@ -100,6 +101,18 @@ def complete_trip(trip, odometer_end, user=None):
     log_state_change(trip, user, 'status', old_trip_status, trip.status, f'Trip completed. Distance: {trip.distance} km')
     log_state_change(vehicle, user, 'status', old_vehicle_status, vehicle.status, f'Returned from Trip #{trip.pk}')
     log_state_change(driver, user, 'status', old_driver_status, driver.status, f'Returned from Trip #{trip.pk}')
+
+    if fuel_consumed and fuel_cost:
+        fuel_consumed = Decimal(str(fuel_consumed))
+        fuel_cost = Decimal(str(fuel_cost))
+        if fuel_consumed > 0 and fuel_cost > 0:
+            log = FuelLog.objects.create(
+                vehicle=vehicle,
+                date=timezone.now().date(),
+                liters=fuel_consumed,
+                cost=fuel_cost
+            )
+            log_creation(log, user, f'Auto-logged {fuel_consumed}L fuel (₹{fuel_cost}) from Trip #{trip.pk}')
 
     return trip
 

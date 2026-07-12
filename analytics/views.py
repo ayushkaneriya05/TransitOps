@@ -7,7 +7,7 @@ from django.db.models import Sum, Q, F, Value, Count
 from django.db.models.functions import Coalesce
 from fleet.models import Vehicle, Maintenance
 from operations.models import Trip
-from finance.models import Expense
+from finance.models import Expense, FuelLog
 from core.decorators import role_required
 
 
@@ -17,13 +17,14 @@ def _vehicle_stats(vehicle):
     trips_with_distance = completed.exclude(odometer_start=None).exclude(odometer_end=None)
     total_distance = sum(float(t.odometer_end - t.odometer_start) for t in trips_with_distance)
     revenue = completed.aggregate(s=Coalesce(Sum('revenue'), Value(Decimal('0'))))['s']
-    fuel_cost = Expense.objects.filter(vehicle=vehicle, category='fuel').aggregate(s=Coalesce(Sum('cost'), Value(Decimal('0'))))['s']
-    fuel_liters = Expense.objects.filter(vehicle=vehicle, category='fuel').aggregate(s=Coalesce(Sum('liters'), Value(Decimal('0'))))['s']
+    fuel_cost = FuelLog.objects.filter(vehicle=vehicle).aggregate(s=Coalesce(Sum('cost'), Value(Decimal('0'))))['s']
+    fuel_liters = FuelLog.objects.filter(vehicle=vehicle).aggregate(s=Coalesce(Sum('liters'), Value(Decimal('0'))))['s']
+    expense_cost = Expense.objects.filter(vehicle=vehicle).aggregate(s=Coalesce(Sum('cost'), Value(Decimal('0'))))['s']
     maint_cost = vehicle.maintenance_records.aggregate(s=Coalesce(Sum('cost'), Value(Decimal('0'))))['s']
-    total_cost = fuel_cost + maint_cost
+    total_cost = fuel_cost + expense_cost + maint_cost
     profit = revenue - total_cost
     fuel_efficiency = round(total_distance / float(fuel_liters), 1) if fuel_liters and fuel_liters > 0 else 0
-    roi = round(float(profit) / float(total_cost) * 100, 1) if total_cost > 0 else 0
+    roi = round(float(profit) / float(vehicle.acquisition_cost) * 100, 1) if vehicle.acquisition_cost > 0 else 0
     trip_count = completed.count()
 
     return {
@@ -33,6 +34,7 @@ def _vehicle_stats(vehicle):
         'fuel_efficiency': fuel_efficiency,
         'revenue': revenue,
         'fuel_cost': fuel_cost,
+        'expense_cost': expense_cost,
         'maintenance_cost': maint_cost,
         'total_cost': total_cost,
         'profit': profit,
@@ -63,8 +65,9 @@ def analytics_dashboard(request):
     # ── Aggregate KPIs from filtered vehicles ──
     total_revenue = sum(v['revenue'] for v in vehicle_analytics)
     total_fuel_cost = sum(v['fuel_cost'] for v in vehicle_analytics)
+    total_expense_cost = sum(v['expense_cost'] for v in vehicle_analytics)
     total_maint_cost = sum(v['maintenance_cost'] for v in vehicle_analytics)
-    total_operational_cost = total_fuel_cost + total_maint_cost
+    total_operational_cost = total_fuel_cost + total_expense_cost + total_maint_cost
     total_profit = total_revenue - total_operational_cost
     total_trips = sum(v['trip_count'] for v in vehicle_analytics)
     total_distance = sum(v['total_distance'] for v in vehicle_analytics)
@@ -130,15 +133,15 @@ def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="transitops_analytics.csv"'
     writer = csv.writer(response)
-    writer.writerow(['Vehicle', 'Type', 'Region', 'Trips', 'Total Distance (km)', 'Fuel (L)', 'Efficiency (km/L)', 'Revenue', 'Fuel Cost', 'Maintenance Cost', 'Profit', 'ROI (%)'])
+    writer.writerow(['Vehicle', 'Type', 'Region', 'Trips', 'Total Distance (km)', 'Fuel (L)', 'Efficiency (km/L)', 'Revenue', 'Fuel Cost', 'Expense Cost', 'Maintenance Cost', 'Total Cost', 'Profit', 'ROI (%)'])
 
     for v in Vehicle.objects.exclude(status=Vehicle.Status.RETIRED):
         stats = _vehicle_stats(v)
         writer.writerow([
             v.name, v.get_vehicle_type_display(), v.region,
             stats['trip_count'], stats['total_distance'], stats['total_liters'],
-            stats['fuel_efficiency'], stats['revenue'], stats['fuel_cost'],
-            stats['maintenance_cost'], stats['profit'], stats['roi'],
+            stats['fuel_efficiency'], stats['revenue'], stats['fuel_cost'], stats['expense_cost'],
+            stats['maintenance_cost'], stats['total_cost'], stats['profit'], stats['roi'],
         ])
 
     return response

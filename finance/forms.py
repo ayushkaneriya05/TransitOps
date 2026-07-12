@@ -1,5 +1,5 @@
 from django import forms
-from .models import Expense
+from .models import Expense, FuelLog
 from fleet.models import Vehicle
 from operations.models import Trip
 
@@ -9,13 +9,12 @@ FORM_INPUT_CLASS = 'form-input'
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ['vehicle', 'trip', 'category', 'cost', 'liters', 'date', 'notes']
+        fields = ['vehicle', 'trip', 'category', 'cost', 'date', 'notes']
         widgets = {
             'vehicle': forms.Select(attrs={'class': FORM_INPUT_CLASS}),
             'trip': forms.Select(attrs={'class': FORM_INPUT_CLASS}),
             'category': forms.Select(attrs={'class': FORM_INPUT_CLASS}),
             'cost': forms.NumberInput(attrs={'class': FORM_INPUT_CLASS, 'min': '0', 'step': '0.01', 'placeholder': 'Amount in ₹'}),
-            'liters': forms.NumberInput(attrs={'class': FORM_INPUT_CLASS, 'min': '0', 'step': '0.01', 'placeholder': 'Liters (fuel only)'}),
             'date': forms.DateInput(attrs={'class': FORM_INPUT_CLASS, 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': FORM_INPUT_CLASS, 'rows': 2, 'placeholder': 'Notes...'}),
         }
@@ -39,3 +38,19 @@ class ExpenseForm(forms.ModelForm):
                     f'Trip #{trip.pk} uses "{trip.vehicle.name}".'
                 )
         return cleaned
+
+
+class FuelLogForm(forms.ModelForm):
+    class Meta:
+        model = FuelLog
+        fields = ['vehicle', 'date', 'liters', 'cost']
+        widgets = {
+            'vehicle': forms.Select(attrs={'class': FORM_INPUT_CLASS}),
+            'date': forms.DateInput(attrs={'class': FORM_INPUT_CLASS, 'type': 'date'}),
+            'liters': forms.NumberInput(attrs={'class': FORM_INPUT_CLASS, 'min': '0', 'step': '0.01', 'placeholder': 'Liters'}),
+            'cost': forms.NumberInput(attrs={'class': FORM_INPUT_CLASS, 'min': '0', 'step': '0.01', 'placeholder': 'Amount in ₹'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['vehicle'].queryset = Vehicle.objects.exclude(status=Vehicle.Status.RETIRED)

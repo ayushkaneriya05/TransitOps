@@ -47,7 +47,7 @@ def trip_list(request):
     if status_filter:
         trips = trips.filter(status=status_filter)
     if search:
-        trips = trips.filter(origin__icontains=search) | trips.filter(destination__icontains=search)
+        trips = trips.filter(source__icontains=search) | trips.filter(destination__icontains=search)
     context = {
         'trips': trips,
         'statuses': Trip.Status.choices,
@@ -64,7 +64,7 @@ def trip_create(request):
         form = TripCreateForm(request.POST)
         if form.is_valid():
             trip = form.save()
-            log_creation(trip, request.user, f'Trip {trip.origin} → {trip.destination}')
+            log_creation(trip, request.user, f'Trip {trip.source} → {trip.destination}')
             if request.htmx:
                 return _htmx_success_row(
                     request, 'operations/partials/trip_row.html', {'trip': trip},
@@ -136,7 +136,13 @@ def trip_complete(request, pk):
         form = TripCompleteForm(request.POST)
         if form.is_valid():
             try:
-                complete_trip(trip, form.cleaned_data['odometer_end'], user=request.user)
+                complete_trip(
+                    trip, 
+                    form.cleaned_data['odometer_end'], 
+                    fuel_consumed=form.cleaned_data.get('fuel_consumed'), 
+                    fuel_cost=form.cleaned_data.get('fuel_cost'), 
+                    user=request.user
+                )
                 if request.htmx:
                     trip.refresh_from_db()
                     return _htmx_success_row(
