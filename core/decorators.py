@@ -12,6 +12,11 @@ def role_required(*roles):
                 return redirect('accounts:login')
             if request.user.role not in roles and not request.user.is_superuser:
                 messages.error(request, 'You do not have permission to access this page.')
+                if getattr(request, 'htmx', False):
+                    from django.http import HttpResponse
+                    resp = HttpResponse()
+                    resp['HX-Redirect'] = '/'
+                    return resp
                 return redirect('core:dashboard')
             return view_func(request, *args, **kwargs)
         return _wrapped

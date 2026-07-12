@@ -2,7 +2,7 @@
 {% block title %}Maintenance — TransitOps{% endblock %}
 {% block page_title %}Maintenance & Service{% endblock %}
 {% block page_description %}Track service records, parts replacement, and vehicle downtime{% endblock %}
-{% block page_actions %}{% if request.user.role == 'manager' or request.user.role == 'safety_officer' or request.user.is_superuser %}<button class="btn btn-primary" hx-get="{% url 'fleet:maintenance_create' %}" hx-target="#modal-content"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Log Maintenance</button>{% endif %}{% endblock %}
+{% block page_actions %}{% if request.user.role == 'manager' or request.user.is_superuser %}<button class="btn btn-primary" hx-get="{% url 'fleet:maintenance_create' %}" hx-target="#modal-content"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Log Maintenance</button>{% endif %}{% endblock %}
 {% block content %}
 <div class="mb-5">
     <form method="get" class="filter-bar">
