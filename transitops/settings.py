@@ -30,8 +30,8 @@ INSTALLED_APPS = [
     'core',
     'fleet',
     'drivers',
-    # 'operations',
-    # 'finance',
+    'operations',
+    'finance',
     # 'analytics',
 ]
 
