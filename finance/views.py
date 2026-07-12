@@ -28,6 +28,7 @@ def _htmx_error_form(request, template, context):
 
 
 @login_required
+@role_required('analyst', 'manager')
 def expense_list(request):
     """Page 6: Completed Trips, Expenses & Fuel Logging."""
     category_filter = request.GET.get('category', '')
@@ -59,7 +60,7 @@ def expense_list(request):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('analyst')
 def expense_create(request):
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
@@ -84,7 +85,7 @@ def expense_create(request):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('analyst')
 def fuel_create(request):
     if request.method == 'POST':
         form = FuelLogForm(request.POST)

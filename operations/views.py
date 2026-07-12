@@ -40,6 +40,7 @@ def _htmx_inline_toasts(request, template, context):
 
 
 @login_required
+@role_required('dispatcher', 'safety_officer', 'manager')
 def trip_list(request):
     status_filter = request.GET.get('status', '')
     search = request.GET.get('q', '')
@@ -58,7 +59,7 @@ def trip_list(request):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('dispatcher')
 def trip_create(request):
     if request.method == 'POST':
         form = TripCreateForm(request.POST)
@@ -83,7 +84,7 @@ def trip_create(request):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('dispatcher')
 def trip_edit(request, pk):
     trip = get_object_or_404(Trip, pk=pk)
     if trip.status != Trip.Status.DRAFT:
@@ -112,7 +113,7 @@ def trip_edit(request, pk):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('dispatcher')
 def trip_dispatch(request, pk):
     trip = get_object_or_404(Trip, pk=pk)
     try:
@@ -129,7 +130,7 @@ def trip_dispatch(request, pk):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('dispatcher')
 def trip_complete(request, pk):
     trip = get_object_or_404(Trip, pk=pk)
     if request.method == 'POST':
@@ -164,7 +165,7 @@ def trip_complete(request, pk):
 
 
 @login_required
-@role_required('manager', 'dispatcher')
+@role_required('dispatcher')
 def trip_cancel(request, pk):
     trip = get_object_or_404(Trip, pk=pk)
     try:
@@ -181,6 +182,7 @@ def trip_cancel(request, pk):
 
 
 @login_required
+@role_required('dispatcher', 'safety_officer', 'manager')
 def trip_detail(request, pk):
     trip = get_object_or_404(Trip.objects.select_related('vehicle', 'driver'), pk=pk)
     expenses = trip.expenses.all()

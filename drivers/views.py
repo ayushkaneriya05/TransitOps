@@ -35,6 +35,7 @@ def _htmx_inline_toasts(request, template, context):
 
 
 @login_required
+@role_required('manager', 'safety_officer', 'dispatcher')
 def driver_list(request):
     status_filter = request.GET.get('status', '')
     category = request.GET.get('category', '')
@@ -134,6 +135,7 @@ def driver_toggle_status(request, pk, new_status):
 
 
 @login_required
+@role_required('manager', 'safety_officer', 'dispatcher')
 def driver_detail(request, pk):
     driver = get_object_or_404(Driver, pk=pk)
     trips = driver.trips.select_related('vehicle').order_by('-created_at')[:20]

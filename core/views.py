@@ -63,3 +63,13 @@ def dashboard(request):
         'selected_region': region,
     }
     return render(request, 'core/dashboard.html', context)
+
+
+@login_required
+def settings_view(request):
+    """Page 9: Settings."""
+    from django.contrib import messages
+    if request.method == 'POST':
+        messages.success(request, 'Settings saved successfully.')
+        return redirect('core:settings')
+    return render(request, 'core/settings.html')

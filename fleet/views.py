@@ -36,6 +36,7 @@ def _htmx_inline_toasts(request, template, context):
 
 
 @login_required
+@role_required('manager', 'dispatcher', 'analyst')
 def vehicle_list(request):
     """Page 3: Vehicle Registry."""
     status_filter = request.GET.get('status', '')
@@ -142,6 +143,7 @@ def vehicle_toggle_retire(request, pk):
 # ── Maintenance Views ──
 
 @login_required
+@role_required('manager', 'dispatcher', 'analyst')
 def maintenance_list(request):
     """Page 5: Maintenance & Service Logs."""
     records = Maintenance.objects.select_related('vehicle').all()
@@ -159,7 +161,7 @@ def maintenance_list(request):
 
 
 @login_required
-@role_required('manager', 'safety_officer')
+@role_required('manager')
 def maintenance_create(request):
     if request.method == 'POST':
         form = MaintenanceForm(request.POST)
@@ -191,7 +193,7 @@ def maintenance_create(request):
 
 
 @login_required
-@role_required('manager', 'safety_officer')
+@role_required('manager')
 def maintenance_resolve(request, pk):
     record = get_object_or_404(Maintenance, pk=pk)
     if not record.is_resolved:

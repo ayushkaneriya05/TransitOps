@@ -44,6 +44,7 @@ def _vehicle_stats(vehicle):
 
 
 @login_required
+@role_required('manager', 'analyst')
 def analytics_dashboard(request):
     """Page 8: Operational Analytics & Financial Reports."""
     vehicle_type = request.GET.get('vehicle_type', '')
