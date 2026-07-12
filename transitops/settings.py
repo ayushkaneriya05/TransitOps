@@ -27,9 +27,9 @@ INSTALLED_APPS = [
     'widget_tweaks',
     # transitops modules
     'accounts',
-    # 'core',
+    'core',
     'fleet',
-    # 'drivers',
+    'drivers',
     # 'operations',
     # 'finance',
     # 'analytics',
