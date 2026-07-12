@@ -9,5 +9,5 @@ urlpatterns = [
     path('drivers/', include('drivers.urls')),
     path('operations/', include('operations.urls')),
     path('finance/', include('finance.urls')),
-    # path('analytics/', include('analytics.urls')),
+    path('analytics/', include('analytics.urls')),
 ]

@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'drivers',
     'operations',
     'finance',
-    # 'analytics',
+    'analytics',
 ]
 
 MIDDLEWARE = [
@@ -105,7 +105,7 @@ else:
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "127.0.0.1",
-        "PORT": "5433",
+        "PORT": "5432",
     }
 }
 # ──────────────────────────────────────────────
